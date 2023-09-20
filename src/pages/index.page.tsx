@@ -1,5 +1,2 @@
-import { Heading } from '@ignite-ui/react'
-
-export default function Home() {
-  return <Heading as="h1">Hello World</Heading>
-}
+// moved home screen to another folder - "export" this home to home file in pages
+export { default } from './home'
