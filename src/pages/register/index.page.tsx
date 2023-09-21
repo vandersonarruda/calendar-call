@@ -6,7 +6,10 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
+import { api } from '@/lib/axios'
+import { AxiosError } from 'axios'
 
+// pass to zod which textfield it have and how to validate
 const registerFormSchema = z.object({
   username: z
     .string()
@@ -20,13 +23,14 @@ const registerFormSchema = z.object({
     .min(3, { message: 'O nome precisa ter pelo menos 3 letras' }),
 })
 
+// using the schema to set form type
 type RegisterFormData = z.infer<typeof registerFormSchema>
 
 export default function Register() {
   const {
     register,
     handleSubmit,
-    setValue,
+    setValue, // to get url query value
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerFormSchema),
@@ -34,7 +38,7 @@ export default function Register() {
 
   const router = useRouter()
 
-  // get query params to set on username input
+  // get query params then set on username input
   useEffect(() => {
     if (router.query.username) {
       setValue('username', String(router.query.username))
@@ -42,7 +46,19 @@ export default function Register() {
   }, [router.query?.username, setValue])
 
   async function handleRegister(data: RegisterFormData) {
-    console.log(data)
+    try {
+      await api.post('/users', {
+        name: data.name,
+        username: data.username,
+      })
+    } catch (err) {
+      if (err instanceof AxiosError && err?.response?.data?.message) {
+        alert(err.response.data.message)
+        return
+      }
+
+      console.log(err)
+    }
   }
 
   return (
